@@ -31,7 +31,7 @@ services:
     volumes:
       - ${PROWLARR_CONFIG_PATH}:/config
     ports:
-      - 9696:9696
+      - ${PROWLARR_PORT-9696}:9696
     restart: unless-stopped
     network_mode: "bridge"
 
@@ -47,7 +47,7 @@ services:
       - ${RADARR_MOVIES_PATH}:/data/movies
       - ${RADARR_DOWNLOADS_PATH}:/downloads
     ports:
-      - 7878:7878
+      - ${RADARR_PORT-7878}:7878
     restart: unless-stopped
     network_mode: "bridge"
 
@@ -63,7 +63,7 @@ services:
       - ${SONARR_TV_PATH}:/tv
       - ${SONARR_DOWNLOADS_PATH}:/downloads
     ports:
-      - 8989:8989
+      - ${SONARR_PORT-8989}:8989
     restart: unless-stopped
     network_mode: "bridge"
 
@@ -80,7 +80,7 @@ services:
       - ${PLEX_MOVIES_PATH}:/data/movies
       - ${PLEX_TV_PATH}:/data/tvshows
     ports:
-      - 32400:32400
+      - ${PLEX_PORT-32400}:32400
     restart: unless-stopped
     network_mode: "bridge"
 
@@ -97,6 +97,6 @@ services:
       - ${NZBGET_CONFIG_PATH}:/config
       - ${NZBGET_DOWNLOADS_PATH}:/downloads
     ports:
-      - 6789:6789
+      - ${NZBGET_PORT-6789}:6789
     restart: unless-stopped
     network_mode: "bridge"
