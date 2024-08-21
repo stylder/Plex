@@ -1,63 +1,102 @@
 services:
-
-  samba:
-    image: dperson/samba # no hay tag con versiones, solo latest
-    restart: always
-    command: '-u "pi;password" -s "media;/media;yes;no" -s "downloads;/downloads;yes;no"'
-    stdin_open: true
-    tty: true
+  deluge:
+    image: linuxserver/deluge:latest
+    container_name: deluge
     environment:
-        - TZ=America/Mexico_City
-    ports:
-      - 139:139
-      - 445:445
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - DELUGE_LOGLEVEL=error # opcional
+      # Password: admin/deluge
     volumes:
-      - ${MEDIA}:/media
-      - ${STORAGE}/torrents:/downloads
+      - ${DELUGE_CONFIG_PATH}:/config
+      - ${DELUGE_DOWNLOADS_PATH}:/downloads
+      - ${DELUGE_MOVIES_PATH}:/data/movies
+      - ${DELUGE_SERIES_PATH}:/data/series
+    ports:
+      - 8112:8112
+      - 6881:6881
+      - 6881:6881/udp
+      - 58846:58846 # opcional
+    restart: unless-stopped
+    network_mode: "bridge"
+
+  prowlarr:
+    image: linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${PROWLARR_CONFIG_PATH}:/config
+    ports:
+      - 9696:9696
+    restart: unless-stopped
+    network_mode: "bridge"
+
+  radarr:
+    image: linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${RADARR_CONFIG_PATH}:/config
+      - ${RADARR_MOVIES_PATH}:/data/movies
+      - ${RADARR_DOWNLOADS_PATH}:/downloads
+    ports:
+      - 7878:7878
+    restart: unless-stopped
+    network_mode: "bridge"
+
+  sonarr:
+    image: linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${SONARR_CONFIG_PATH}:/config
+      - ${SONARR_TV_PATH}:/tv
+      - ${SONARR_DOWNLOADS_PATH}:/downloads
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+    network_mode: "bridge"
 
   plex:
     image: jaymoulin/plex:1.30.1.6562
-    expose:
-      - 32400
-      - 33400
+    container_name: plex
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - VERSION=docker
+    volumes:
+      - ${PLEX_CONFIG_PATH}:/config
+      - ${PLEX_MOVIES_PATH}:/data/movies
+      - ${PLEX_TV_PATH}:/data/tvshows
     ports:
       - 32400:32400
-      - 33400:33400
-    environment:
-        - TZ=America/Mexico_City
-    volumes:
-      - ${STORAGE}:/root/Library/Application Support/Plex Media Server
-      - ${MEDIA}:/media
-      - ${STORAGE}/tmp:/tmp
     restart: unless-stopped
-    network_mode: "host"
+    network_mode: "bridge"
 
-  transmission:
-    image : jaymoulin/transmission:3.00-1.6.1
-    command: transmission-daemon -f -g /config
-    volumes:
-      - ./transmission:/config
-      - ${STORAGE}/torrents:/downloads
-    ports:
-      - 9091:9091
-      - 51413:51413
-      - 51413:51413/udp
-    expose:
-      - 9091
-    restart: unless-stopped
-
-  flexget:
-    image: wiserain/flexget:3.5
-    volumes:
-      - ./flexget:/config
-      - ./flexget/custom-cont-init.d:/custom-cont-init.d
-      - ${STORAGE}/torrents:/downloads
-      - ${MEDIA}:/storage
-    ports:
-      - 5050:5050
+  nzbget:
+    image: linuxserver/nzbget:latest
+    container_name: nzbget
     environment:
-      - PUID=1001
-      - PGID=1001
-      - TORRENT_PLUGIN=transmission
-      - FG_WEBUI_PASSWD=pa55word # la puedes cambiar por la que quieras
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - NZBGET_USER=${NZBGET_USER}
+      - NZBGET_PASS=${NZBGET_PASS}
+    volumes:
+      - ${NZBGET_CONFIG_PATH}:/config
+      - ${NZBGET_DOWNLOADS_PATH}:/downloads
+    ports:
+      - 6789:6789
     restart: unless-stopped
+    network_mode: "bridge"
